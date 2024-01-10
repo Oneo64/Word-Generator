@@ -3,8 +3,212 @@
 	<head>
 		<title>Word Generator</title>
 		<meta charset="UTF-8">
+		<style type="text/css">
+			.title {
+				width: 100%;
+				height: 10vh;
+
+				font-family: monospace;
+				font-size: 5vh;
+				text-align: center;
+			}
+
+			.input {
+				margin-left: 15vw;
+				width: 30vw;
+				height: 30vw;
+				resize: none;
+				font-size: 2vh;
+			}
+
+			.output {
+				margin-right: 15vw;
+				width: 30vw;
+				height: 30vw;
+				resize: none;
+				font-size: 2vh;
+			}
+
+			.button0 {
+				margin-left: 15vw;
+				margin-top: 3px;
+				padding-bottom: 6px;
+				width: calc(60vw + 20px);
+				height: 5vh;
+				font-size: 3vh;
+			}
+		</style>
 	</head>
 	<body>
-		
+		<div class="title">Neo's word generator for your conlang!!!1!</div>
+		<textarea id="input" class="input" placeholder="input">
+			start>a|b|c
+			rules>clamp_two
+			min>3
+			max>6
+
+			vowels>a|e|i|o|u
+
+			aeiou>b|c|d|e|f|g|h|i|j|k|l|m|n|p|qu|r|s|t|u|v|w|x|y|z
+			bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z
+		</textarea>
+		<textarea id="output" class="output" readonly></textarea>
+		<input id="button0" class="button0" type="button" value="Generate" />
+
+		<script>
+			document.getElementById("button0").addEventListener("click", generate);
+
+			function process_settings(txt) {
+				var settings = {};
+				var split = txt.split("\n");
+
+				for (var i = 0; i < split.length; i++) {
+					var cmd = split[i].replace(" ", "");
+					var syn = cmd.search(">");
+
+					if (cmd.length == 0) continue;
+
+					if (cmd.length >= 7 && cmd.substring(0, 6) == "start>") {
+						var results = cmd.substring(cmd.search(">") + 1, cmd.length).split("|");
+
+						settings["start"] = [];
+
+						for (var k = 0; k < results.length; k++) {
+							settings["start"].push(results[k]);
+						}
+					} else if (cmd.length >= 6 && cmd.substring(0, 6) == "rules>") {
+						var results = cmd.substring(cmd.search(">") + 1, cmd.length).split("|");
+
+						settings["rules"] = [];
+
+						for (var k = 0; k < results.length; k++) {
+							settings["rules"] = [results[k]];
+						}
+					} else if (cmd.length >= 7 && cmd.substring(0, 7) == "vowels>") {
+						var results = cmd.substring(cmd.search(">") + 1, cmd.length).split("|");
+
+						settings["vowels"] = [];
+
+						for (var k = 0; k < results.length; k++) {
+							settings["vowels"].push(results[k]);
+						}
+					} else if (cmd.length >= 5 && cmd.substring(0, 4) == "min>") {
+						settings["min"] = cmd.substring(4, cmd.length);
+					} else if (cmd.length >= 5 && cmd.substring(0, 4) == "max>") {
+						settings["max"] = cmd.substring(4, cmd.length);
+					} else if (syn != -1) {
+						var letters = cmd.substring(0, cmd.search(">"));
+						var results = cmd.substring(cmd.search(">") + 1, cmd.length).split("|");
+
+						for (var n = 0; n < letters.length; n++) {
+							settings[letters.charAt(n)] = {"v": [], "c": []};
+
+							for (var k = 0; k < results.length; k++) {
+								if (settings["vowels"].indexOf(results[k]) != -1) {
+									settings[letters.charAt(n)]["v"].push(results[k]);
+								} else {
+									settings[letters.charAt(n)]["c"].push(results[k]);
+								}
+							}
+						}
+					} else {
+						return "Invalid syntax: You did not put a '>'.";
+					}
+				}
+
+				if (!("start" in settings)) {
+					return "Missing Keyword: You must have a 'start' keyword!";
+				}
+
+				if (!("rules" in settings)) {
+					return "Missing Keyword: You must have a 'rules' keyword! (it can be empty)";
+				}
+
+				if (!("vowels" in settings)) {
+					return "Missing Keyword: You must have a 'vowels' keyword! (if empty, all letters are consonants)";
+				}
+
+				if (!("min" in settings)) {
+					return "Missing Keyword: You must have a 'min' keyword! (it can be empty)";
+				} else {
+					if (isNaN(parseInt(settings["min"]))) {
+						return "Invalid Syntax: The keyword 'min' must be a number!";
+					}
+				}
+
+				if (!("max" in settings)) {
+					return "Missing Keyword: You must have a 'max' keyword! (if empty, all letters are consonants)";
+				} else {
+					if (isNaN(parseInt(settings["max"]))) {
+						return "Invalid Syntax: The keyword 'max' must be a number!";
+					}
+				}
+
+				return settings;
+			}
+
+			function random(min, max) {
+				return Math.floor(Math.random() * (max - min)) + min;
+			}
+
+			function create_word(settings, min, max) {
+				var length = random(min, max);
+				var word = "";
+				var lastLetter = "";
+
+				var threshold = 0;
+				var isVowel = random(0, 1) == 0;
+
+				for (var i = 0; i < length; i++) {
+					if (lastLetter == "") lastLetter = settings["start"][random(0, settings["start"].length)];
+
+					if (lastLetter in settings) {
+						if (settings["rules"].indexOf("clamp_two") != -1) {
+							threshold += 1;
+
+							if (threshold == 2 || random(0, 1) == 1) {
+								isVowel = !isVowel;
+								threshold = 0;
+							}
+
+							lst = settings[lastLetter]["c"];
+
+							if (isVowel) {
+								lst = settings[lastLetter]["v"];
+							}
+
+							lastLetter = lst[random(0, lst.length)];
+							word += lastLetter;
+							lastLetter = lastLetter[lastLetter.length - 1];
+						} else {
+							var combined = settings[lastLetter]["v"].concat(settings[lastLetter]["c"]);
+
+							lastLetter = combined[random(0, combined.length)];
+							word += lastLetter;
+							lastLetter = lastLetter[lastLetter.length - 1];
+						}
+					} else {
+						break;
+					}
+				}
+
+				return word;
+			}
+
+			function generate() {
+				var settings = process_settings(document.getElementById("input").value);
+				var out = "";
+
+				if (typeof(settings) == "string") {
+					out = settings;
+				} else {
+					for (var i = 0; i < 20; i++) {
+						out += create_word(settings, parseInt(settings["min"]), parseInt(settings["max"])) + "\n";
+					}
+				}
+
+				document.getElementById("output").value = out;
+			}
+		</script>
 	</body>
 </html>
