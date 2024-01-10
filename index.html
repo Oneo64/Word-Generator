@@ -155,7 +155,7 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 				var lastLetter = "";
 
 				var threshold = 0;
-				var isVowel = random(0, 1) == 0;
+				var isVowel = random(0, 2) == 0;
 
 				for (var i = 0; i < length; i++) {
 					if (lastLetter == "") lastLetter = settings["start"][random(0, settings["start"].length)];
@@ -164,7 +164,7 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 						if (settings["rules"].indexOf("clamp_two") != -1) {
 							threshold += 1;
 
-							if (threshold == 2 || random(0, 1) == 1) {
+							if (threshold == 2 || random(0, 2) == 1) {
 								isVowel = !isVowel;
 								threshold = 0;
 							}
