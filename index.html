@@ -41,20 +41,74 @@
 	</head>
 	<body>
 		<div class="title">Neo's word generator for your conlang!!!1!</div>
-		<textarea id="input" class="input" placeholder="input">start>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z
-rules>clamp_two
+		
+		<textarea id="input" class="input" placeholder="input" spellcheck="false"></textarea>
+		<textarea id="output" class="output" readonly></textarea>
+
+		<div class="bottom">
+			<select name="presets" class="button0" id="presets" onchange="document.getElementById('input').value = presets[this.value];">
+			 	<option value="germanic">Preset: Germanic</option>
+				<option value="northern_germanic">Preset: Northern Germanic</option>
+				<option value="chinese">Preset: Chinese</option>
+				<option value="japanese">Preset: Japanse</option>
+				<option value="slavic">Preset: Slavic</option>
+			</select>
+
+			<input id="button0" class="button0" type="button" value="Generate" />
+		</div>
+
+		<script>
+			document.getElementById("button0").addEventListener("click", generate);
+
+			const presets = {
+"germanic": `alphabet>abcdefghijklmnopqrstuvwxyz
+start>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z
+rules>clamp_two|trim_vowels
 min>3
 max>6
 
 vowels>a|e|i|o|u
 
 aeiou>b|c|d|e|f|g|h|i|j|k|l|m|n|p|th|r|s|t|u|v|w|x|y|z
-bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</textarea>
-		<textarea id="output" class="output" readonly></textarea>
-		<input id="button0" class="button0" type="button" value="Generate" />
+bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z`,
+"northern_germanic": `alphabet>abcdefghijklmnopqrstuvwxyøæåí
+start>a|b|d|e|f|g|h|i|j|k|l|m|n|o|p|r|s|t|u|v|w
+rules>trim_vowels
+min>3
+max>8
 
-		<script>
-			document.getElementById("button0").addEventListener("click", generate);
+vowels>a|å|æ|e|i|í|o|ø|u|y|j
+
+aåæeiíoøu>d|f|g|h|k|l|m|n|p|t|r|s|t|v|x
+j>a|e|i|o|u
+y>d|f|g|h|k|l|m|n|p|t|r|s|t|u|v|x
+
+b>a|å|æ|e|o|ø|u|y
+dhmnstvw>a|å|æ|e|ei|i|í|o|ø|u|y
+rfgklp>|d|h|m|n|s|t|u|v`,
+"chinese": `alphabet>abcdefghijklmnopqrstuvwxy
+start>b|ch|d|f|g|h|k|l|m|n|p|q|s|t|w|z|y
+rules>
+min>2
+max>3
+
+vowels>a|e|i|o|u
+
+aeiou>u|n|ng
+
+bdfghklmnpqstwzy>a|e|i|o|u`,
+"japanese": `alphabet>abcdefghijkmnoprstuvwyz
+start>b|d|f|g|h|in|id|it|ir|j|k|m|n|p|r|s|t|w|y|z
+rules>even_length
+min>3
+max>6
+
+vowels>a|e|i|o|u
+
+aeiou>b|d|f|g|h|j|k|m|n|p|r|s|t|v|w|y|z
+bdfghjmnprvwz>a|e|i|o|u
+ytsk>a|e|i|o|u`
+			};
 
 			function process_settings(txt) {
 				var settings = {};
@@ -80,7 +134,7 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 						settings["rules"] = [];
 
 						for (var k = 0; k < results.length; k++) {
-							settings["rules"] = [results[k]];
+							settings["rules"].push(results[k]);
 						}
 					} else if (cmd.length >= 7 && cmd.substring(0, 7) == "vowels>") {
 						var results = cmd.substring(cmd.search(">") + 1, cmd.length).split("|");
@@ -94,6 +148,8 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 						settings["min"] = cmd.substring(4, cmd.length);
 					} else if (cmd.length >= 5 && cmd.substring(0, 4) == "max>") {
 						settings["max"] = cmd.substring(4, cmd.length);
+					} else if (cmd.length >= 10 && cmd.substring(0, 9) == "alphabet>") {
+						settings["alphabet"] = cmd.substring(9, cmd.length);
 					} else if (syn != -1) {
 						var letters = cmd.substring(0, cmd.search(">"));
 						var results = cmd.substring(cmd.search(">") + 1, cmd.length).split("|");
@@ -112,6 +168,10 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 					} else {
 						return "Invalid syntax: You did not put a '>'.";
 					}
+				}
+
+				if (!("alphabet" in settings)) {
+					return "Missing Keyword: There is no alphabet!";
 				}
 
 				if (!("start" in settings)) {
@@ -142,6 +202,14 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 					}
 				}
 
+				settings["consonants"] = [];
+
+				for (var i = 0; i < settings["alphabet"].length; i++) {
+					if (settings["vowels"].indexOf(settings["alphabet"][i]) == -1) {
+						settings["consonants"].push(settings["alphabet"][i]);
+					}
+				}
+
 				return settings;
 			}
 
@@ -157,6 +225,10 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 				var threshold = 0;
 				var isVowel = random(0, 2) == 0;
 
+				if (settings["rules"].indexOf("even_length") != -1) {
+					length = Math.floor(length / 2) * 2;
+				}
+
 				for (var i = 0; i < length; i++) {
 					var skip = false;
 
@@ -169,17 +241,27 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 						if (settings["rules"].indexOf("clamp_two") != -1 && !skip) {
 							threshold += 1;
 
-							if (threshold == 2 || random(0, 2) == 1) {
+							lst = ["a"];
+
+							if (threshold == 2 || random(0, 2) == 0) {
 								isVowel = !isVowel;
 								threshold = 0;
 							}
-
-							lst = settings[lastLetter]["c"];
-
-							if (isVowel && settings[lastLetter]["v"].length > 0) {
-								lst = settings[lastLetter]["v"];
+							
+							if (isVowel) {
+								if (settings[lastLetter]["v"].length > 0) {
+									lst = settings[lastLetter]["v"];
+								} else {
+									lst = settings["vowels"];
+								}
+							} else {
+								if (settings[lastLetter]["c"].length > 0) {
+									lst = settings[lastLetter]["c"];
+								} else {
+									lst = settings["consonants"];
+								}
 							}
-
+							
 							lastLetter = lst[random(0, lst.length)];
 							word += lastLetter;
 						} else {
@@ -194,7 +276,17 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 
 						lastLetter = lastLetter.charAt(lastLetter.length - 1);
 					} else {
+						word = "-Can't find letters for: " + lastLetter;
 						break;
+					}
+				}
+
+				if (settings["rules"].indexOf("trim_vowels") != -1 && word.length >= 2) {
+					var checkA = settings["consonants"].indexOf(word.charAt(0)) != -1;
+					var checkB = settings["consonants"].indexOf(word.charAt(1)) != -1;
+
+					if (checkA && checkB) {
+						word = word.charAt(0) + word.substring(2, word.length);
 					}
 				}
 
