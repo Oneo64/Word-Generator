@@ -9,20 +9,21 @@
 				height: 10vh;
 
 				font-family: monospace;
-				font-size: 5vh;
+				font-size: calc(1vw + 3vh);
 				text-align: center;
 			}
 
-			.input {
-				margin-left: 15vw;
-				width: 30vw;
-				height: 30vw;
-				resize: none;
-				font-size: 2vh;
+			.text {
+				width: 100%;
+
+				font-family: monospace;
+				font-size: 1vw;
+				text-align: left;
+
+				word-wrap: break-word;
 			}
 
-			.output {
-				margin-right: 15vw;
+			.textarea {
 				width: 30vw;
 				height: 30vw;
 				resize: none;
@@ -30,31 +31,115 @@
 			}
 
 			.button0 {
-				margin-left: 15vw;
 				margin-top: 3px;
 				padding-bottom: 6px;
-				width: calc(60vw + 20px);
+				width: calc(100%);
 				height: 5vh;
 				font-size: 3vh;
+			}
+
+			.guide {
+				padding-left: 18vw;
+				padding-right: 18vw;
+				padding-top: 1vw;
+			}
+
+			.alignmiddle {
+				width: calc(60vw + 20px);
+				margin: auto;
 			}
 		</style>
 	</head>
 	<body>
 		<div class="title">Neo's word generator for your conlang!!!1!</div>
 		
-		<textarea id="input" class="input" placeholder="input" spellcheck="false"></textarea>
-		<textarea id="output" class="output" readonly></textarea>
+		<div class="alignmiddle">
+			<textarea id="input" class="textarea" placeholder="input" spellcheck="false"></textarea>
+			<textarea id="output" class="textarea" readonly></textarea>
+		</div>
 
-		<div class="bottom">
+		<div class="bottom alignmiddle">
 			<select name="presets" class="button0" id="presets" onchange="document.getElementById('input').value = presets[this.value];">
 			 	<option value="germanic">Preset: Germanic</option>
 				<option value="northern_germanic">Preset: Northern Germanic</option>
 				<option value="chinese">Preset: Chinese</option>
 				<option value="japanese">Preset: Japanse</option>
 				<option value="slavic">Preset: Slavic</option>
+				<option value="south_asian">Preset: South Asian</option>
 			</select>
 
 			<input id="button0" class="button0" type="button" value="Generate" />
+		</div>
+
+		<div class="guide">
+			<br>
+			<br>
+			<div class="title">Your useful handbook</div>
+			<pre class="text"><hr>1. Syntax
+<hr>1.1 >
+	The ">" symbol, is used to mark the end of a keyword, and the start of the input.
+
+1.2 |
+	The "|" symbol, is used to seperate input values. All keywords, other than "alphabet", will require
+	these symbols to seperate input.
+
+<hr>2. Keywords
+<hr>2.1 alphabet:
+	This is a list of letters that will be used in the words. If there is a letter that doesn't appear here,
+	that does not mean it won't appear in the generated words.
+
+	In this example, there are "abcdefg" in the alphabet.
+	  start>abcdefg
+
+2.2 start:
+	This is a list of letters that will start each word.
+
+	In this example, every word will always start with "a", "abc", or "de".
+	  start>a|abc|de
+
+2.3 rules:
+	This is a list of rules that will be applied to each word, either while generating, or after generating.
+	This list can be left empty.
+
+2.4 caps:
+	If a word ends with a vowel, then a random word from this list will be added to the end.
+	This list can be left empty.
+
+2.5 min:
+	The minimum amount of iterations to use in each word.
+
+2.6 max:
+	The maximum amount of iterations to use in each word.
+
+2.7 max:
+	Every vowel to be used. This is a list that will tell the keyword processer what letters are vowels, and
+	what isn't.
+
+2.8 other keywords:
+	Other keywords are kind of like tree branches. If the last letter in an iteration was "a", and this
+	keyword contains a, then it picks a random letter, or sequence from this list to add to the word.
+
+	In this example, if the last letter was "a", "b", or "c", then the next letter will be "d", "e", or "f".
+	  abc>d|e|f
+
+<hr>3. Rules
+<hr>2.1 clamp_two:
+	This rule makes sure that there are a maximum of two vowels, or consonants consecutively.
+
+2.2 trim_vowels
+	This rule tries to make sure that there are no repeating vowels.
+
+2.2 trim_consonants
+	This rule tries to make sure that there are only one consonant to begin.
+
+2.2 no_duplicated_vowels
+	This rule tries to make sure that there are no repeating vowels. To avoid confusion:
+
+	heello >> trim_vowels          - remove the repeating "ee".
+	salad  >> no_duplicated_vowels - turn the second "a" in "salad" to something else, even if it's a valid word.
+
+2.2 no_duplicated_consonants
+	This rule is the same as no_duplicated_vowels, except it checks for consonants.</pre>
 		</div>
 
 		<script>
@@ -62,35 +147,42 @@
 
 			const presets = {
 "germanic": `alphabet>abcdefghijklmnopqrstuvwxyz
-start>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z
-rules>clamp_two|trim_vowels
+start>a|b|c|d|e|f|g|h|i|j|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z
+rules>clamp_two|trim_consonants|trim_vowels
+caps>th|r|l|d|ck|ld|n|nd|rd|nt|rt|t
+
 min>3
-max>6
+max>8
 
 vowels>a|e|i|o|u
 
-aeiou>b|c|d|e|f|g|h|i|j|k|l|m|n|p|th|r|s|t|u|v|w|x|y|z
-bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z`,
-"northern_germanic": `alphabet>abcdefghijklmnopqrstuvwxyøæåí
+aeiou>b|d|f|g|h|k|l|m|n|p|th|r|s|t|v|w|x|y|z
+bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|k|l|m|n|o|p|r|s|t|u|v|w|x|y|z`,
+"northern_germanic": `alphabet>abdefghijklmnoprstuvwxyøæåí
 start>a|b|d|e|f|g|h|i|j|k|l|m|n|o|p|r|s|t|u|v|w
-rules>trim_vowels
+rules>no_duplicated_consonants|trim_consonants
+caps>g|d|ld|nd|r|v|t|f|l|k|d|x|lje|fje|tje|lle
+
 min>3
 max>8
 
 vowels>a|å|æ|e|i|í|o|ø|u|y|j
 
-aåæeiíoøu>d|f|g|h|k|l|m|n|p|t|r|s|t|v|x
+aåæeíoøu>d|f|g|k|l|m|n|p|t|r|s|t|v|x
+i>d|f|g|n|r
 j>a|e|i|o|u
-y>d|f|g|h|k|l|m|n|p|t|r|s|t|u|v|x
+y>d|f|g|k|l|m|n|p|t|r|s|t|u|v|x
 
 b>a|å|æ|e|o|ø|u|y
-dhmnstvw>a|å|æ|e|ei|i|í|o|ø|u|y
-rfgklp>|d|h|m|n|s|t|u|v`,
+dhmnsw>a|å|æ|e|ei|i|í|o|ø|u|y|v
+tplkgfrv>a|å|æ|e|ei|i|í|o|ø|u|y|d|m|n|s|t|u`,
 "chinese": `alphabet>abcdefghijklmnopqrstuvwxy
 start>b|ch|d|f|g|h|k|l|m|n|p|q|s|t|w|z|y
 rules>
+caps>
+
 min>2
-max>3
+max>4
 
 vowels>a|e|i|o|u
 
@@ -100,6 +192,8 @@ bdfghklmnpqstwzy>a|e|i|o|u`,
 "japanese": `alphabet>abcdefghijkmnoprstuvwyz
 start>b|d|f|g|h|in|id|it|ir|j|k|m|n|p|r|s|t|w|y|z
 rules>even_length
+caps>
+
 min>3
 max>6
 
@@ -107,7 +201,34 @@ vowels>a|e|i|o|u
 
 aeiou>b|d|f|g|h|j|k|m|n|p|r|s|t|v|w|y|z
 bdfghjmnprvwz>a|e|i|o|u
-ytsk>a|e|i|o|u`
+ytsk>a|e|i|o|u`,
+"slavic": `alphabet>abcdefghijklmnopqrstuvwxy
+start>a|b|d|e|f|g|h|i|j|k|l|m|n|o|p|r|s|t|u|v|w|y|z
+rules>no_duplicated_vowels|trim_consonants
+caps>
+
+min>3
+max>8
+
+vowels>a|e|i|o|u
+
+aeio>ch|d|f|g|h|k|l|m|n|p|t|r|s|sh|t|v
+u>ch|f|k|t|sh|t|v
+
+bcdfghjklmnprstwxyz>a|e|i|o|u
+v>a|e|i|l|o|r`,
+"south_asian": `alphabet>abcdefghijklmnopqrstuvwxyz
+start>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z
+rules>clamp_two|trim_consonants
+caps>
+
+min>3
+max>6
+
+vowels>a|e|i|o|u
+
+aeiou>b|c|d|e|f|g|h|i|j|k|l|m|n|p|th|r|s|t|u|v|w|x|y|z
+bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z`
 			};
 
 			function process_settings(txt) {
@@ -148,6 +269,14 @@ ytsk>a|e|i|o|u`
 						settings["min"] = cmd.substring(4, cmd.length);
 					} else if (cmd.length >= 5 && cmd.substring(0, 4) == "max>") {
 						settings["max"] = cmd.substring(4, cmd.length);
+					} else if (cmd.length >= 5 && cmd.substring(0, 5) == "caps>") {
+						var results = cmd.substring(cmd.search(">") + 1, cmd.length).split("|");
+
+						settings["caps"] = [];
+
+						for (var k = 0; k < results.length; k++) {
+							settings["caps"].push(results[k]);
+						}
 					} else if (cmd.length >= 10 && cmd.substring(0, 9) == "alphabet>") {
 						settings["alphabet"] = cmd.substring(9, cmd.length);
 					} else if (syn != -1) {
@@ -180,6 +309,10 @@ ytsk>a|e|i|o|u`
 
 				if (!("rules" in settings)) {
 					return "Missing Keyword: You must have a 'rules' keyword! (it can be empty)";
+				}
+
+				if (!("caps" in settings)) {
+					return "Missing Keyword: You must have a 'caps' keyword! (it can be empty)";
 				}
 
 				if (!("vowels" in settings)) {
@@ -276,12 +409,12 @@ ytsk>a|e|i|o|u`
 
 						lastLetter = lastLetter.charAt(lastLetter.length - 1);
 					} else {
-						word = "-Can't find letters for: " + lastLetter;
+						word += " (End: Letters missing for: " + lastLetter + ")";
 						break;
 					}
 				}
 
-				if (settings["rules"].indexOf("trim_vowels") != -1 && word.length >= 2) {
+				if (settings["rules"].indexOf("trim_consonants") != -1 && word.length >= 2) {
 					var checkA = settings["consonants"].indexOf(word.charAt(0)) != -1;
 					var checkB = settings["consonants"].indexOf(word.charAt(1)) != -1;
 
@@ -289,6 +422,64 @@ ytsk>a|e|i|o|u`
 						word = word.charAt(0) + word.substring(2, word.length);
 					}
 				}
+
+				if (settings["rules"].indexOf("trim_vowels") != -1 && word.length >= 2) {
+					var v = "";
+
+					for (var i = 0; i < word.length; i++) {
+						if (settings["vowels"].indexOf(word.charAt(i)) != -1) {
+							if (v != "" && v == word.charAt(i)) {
+								var randVowel = settings["vowels"][random(0, settings["vowels"].length)];
+
+								word = word.substring(0, i) + randVowel + word.substring(i + 1, word.length);
+							} else {
+								v = word.charAt(i);
+							}
+						} else {
+							v = "";
+						}
+					}
+				}
+
+				if (settings["rules"].indexOf("no_duplicated_vowels") != -1 && word.length >= 3) {
+					var v = "";
+
+					for (var i = 0; i < word.length; i++) {
+						if (settings["vowels"].indexOf(word.charAt(i)) != -1) {
+							if (v != "" && v == word.charAt(i)) {
+								var randVowel = settings["vowels"][random(0, settings["vowels"].length)];
+
+								word = word.substring(0, i) + randVowel + word.substring(i + 1, word.length);
+							} else {
+								v = word.charAt(i);
+							}
+						}
+					}
+				}
+
+				if (settings["rules"].indexOf("no_duplicated_consonants") != -1 && word.length >= 3) {
+					var v = "";
+
+					for (var i = 0; i < word.length; i++) {
+						if (settings["consonants"].indexOf(word.charAt(i)) != -1) {
+							if (v != "" && v == word.charAt(i)) {
+								var randVowel = settings["consonants"][random(0, settings["consonants"].length)];
+
+								word = word.substring(0, i) + randVowel + word.substring(i + 1, word.length);
+							} else {
+								v = word.charAt(i);
+							}
+						}
+					}
+				}
+
+				if (settings["vowels"].indexOf(word.charAt(word.length - 1)) != -1) {
+					if (settings["caps"].length > 0) {
+						word += settings["caps"][random(0, settings["caps"].length)];
+					}
+				}
+
+				console.log(settings);
 
 				return word;
 			}
