@@ -41,14 +41,14 @@
 	</head>
 	<body>
 		<div class="title">Neo's word generator for your conlang!!!1!</div>
-		<textarea id="input" class="input" placeholder="input">start>a|b|c
+		<textarea id="input" class="input" placeholder="input">start>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z
 rules>clamp_two
 min>3
 max>6
 
 vowels>a|e|i|o|u
 
-aeiou>b|c|d|e|f|g|h|i|j|k|l|m|n|p|qu|r|s|t|u|v|w|x|y|z
+aeiou>b|c|d|e|f|g|h|i|j|k|l|m|n|p|th|r|s|t|u|v|w|x|y|z
 bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</textarea>
 		<textarea id="output" class="output" readonly></textarea>
 		<input id="button0" class="button0" type="button" value="Generate" />
@@ -158,10 +158,15 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 				var isVowel = random(0, 2) == 0;
 
 				for (var i = 0; i < length; i++) {
-					if (lastLetter == "") lastLetter = settings["start"][random(0, settings["start"].length)];
+					var skip = false;
 
-					if (lastLetter in settings) {
-						if (settings["rules"].indexOf("clamp_two") != -1) {
+					if (lastLetter == "") {
+						lastLetter = settings["start"][random(0, settings["start"].length)];
+						skip = true;
+					}
+
+					if (lastLetter.charAt(lastLetter.length - 1) in settings) {
+						if (settings["rules"].indexOf("clamp_two") != -1 && !skip) {
 							threshold += 1;
 
 							if (threshold == 2 || random(0, 2) == 1) {
@@ -177,14 +182,17 @@ bcdfghjklmnprstvwxyz>a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|qu|r|s|t|u|v|w|x|y|z</texta
 
 							lastLetter = lst[random(0, lst.length)];
 							word += lastLetter;
-							lastLetter = lastLetter[lastLetter.length - 1];
 						} else {
-							var combined = settings[lastLetter]["v"].concat(settings[lastLetter]["c"]);
+							if (!skip) {
+								var combined = settings[lastLetter]["v"].concat(settings[lastLetter]["c"]);
 
-							lastLetter = combined[random(0, combined.length)];
+								lastLetter = combined[random(0, combined.length)];
+							}
+
 							word += lastLetter;
-							lastLetter = lastLetter[lastLetter.length - 1];
 						}
+
+						lastLetter = lastLetter.charAt(lastLetter.length - 1);
 					} else {
 						break;
 					}
